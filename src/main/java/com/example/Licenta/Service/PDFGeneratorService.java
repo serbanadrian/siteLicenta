@@ -1,80 +1,74 @@
 package com.example.Licenta.Service;
 
-import com.itextpdf.io.image.ImageData;
-import com.itextpdf.io.image.ImageDataFactory;
-import com.itextpdf.kernel.color.Color;
-import com.itextpdf.kernel.geom.PageSize;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.border.Border;
-import com.itextpdf.layout.border.SolidBorder;
-import com.itextpdf.layout.element.Image;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
-import jakarta.servlet.ServletOutputStream;
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.PdfWriter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+
 
 
 @Service
 public class PDFGeneratorService {
-    private int nr =1;
-    private String figura = "Cercuri";
-    private String culoare = "albastre";
-    //    public Numarare2(int nr, String figura, String culoare){
-//        this.nr = nr;
-//        this.culoare = culoare;
-//        this.figura = figura;
-//
-//    }
-    public void crearePDF(HttpServletResponse response) throws IOException, URISyntaxException {
-        float col1 = 190f;
-        float full[] = {col1*3};
-        float desiredWidth = 200;
-        float desiredHeight = 200;
-        String image1 = "C:\\Users\\adria\\OneDrive\\Desktop\\aici\\Licenta\\src\\main\\resources\\static\\ScrierePDF " + nr + ".png";
+    private int nr;
+    private String figura;
+    private String culoare;
 
-        ImageData imageData1 = ImageDataFactory.create(image1);
-        Image img1 = new Image(imageData1);
-        String image2 = "C:\\Users\\adria\\OneDrive\\Desktop\\aici\\Licenta\\src\\main\\resources\\static\\Incercuire cifra " + nr + ".png";
-        img1.scaleToFit(desiredWidth, desiredHeight);
-        ImageData imageData2 = ImageDataFactory.create(image2);
-        Image image = new Image(imageData2);
-        String image3 = "C:\\Users\\adria\\OneDrive\\Desktop\\aici\\Licenta\\src\\main\\resources\\static\\" + figura + " " + culoare +".png";
-        image.scaleToFit(desiredWidth, desiredHeight);
-        ImageData imageData3 = ImageDataFactory.create(image3);
-        Image img3 = new Image(imageData3);
-        String path = "Invatarea cifrei " + nr +".pdf";
-        img3.scaleToFit(desiredWidth, desiredHeight);
-        PdfWriter pdfWriter = new PdfWriter(path);
-        pdfWriter.getOutputStream();
-        PdfDocument pdfDocument = new PdfDocument(pdfWriter);
-        pdfDocument.setDefaultPageSize(PageSize.A4);
-        Document document = new Document(pdfDocument);
-        document.add(new Paragraph("Invatarea " + this.corectie() + nr).setFontSize(20f));
-        Border gb = new SolidBorder(Color.GRAY, 2f);
-        Table div = new Table(full);
-        div.setBorder(gb);
-        document.add(div);
-        document.add(new Paragraph("Exersarea scrierii " + this.corectie() + nr + this.numar()));
-        document.add(img1);
-        document.add(img1);
-        document.add(new Paragraph("Exercitii de recunoastere a " + this.corectie() + nr + this.numar() + ":"));
-        document.add(image.setFontSize(0.5f));
-        document.add((new Paragraph("Creati prin incercuire grupe de cate " + this.figuri())));
-        document.add(img3);
-        document.close();
-//        response.setContentLength(pdfWriter.setC);
-
+    public void setNr(int nr) {
+        this.nr = nr;
     }
-    public String numar(){
+
+    public void setCuloare(String culoare) {
+        this.culoare = culoare;
+    }
+
+    public void setFigura(String figura) {
+        this.figura = figura;
+    }
+
+    public void crearePDF(HttpServletResponse response) throws IOException {
+        Document document = new Document(PageSize.A4);
+        PdfWriter.getInstance(document, response.getOutputStream());
+        document.open();
+        Font titlu = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
+        titlu.setSize(23);
+        Paragraph paragraph = new Paragraph("Invatarea " + this.corectie() + nr, titlu);
+        paragraph.setAlignment(Paragraph.ALIGN_CENTER);
+        Font font = FontFactory.getFont(FontFactory.HELVETICA);
+        Paragraph paragraph1 = new Paragraph("Exersarea scrierii " + this.corectie() + nr + this.numar(), font);
+        Paragraph paragraph2 = new Paragraph("Exercitii de recunoastere a " + this.corectie() + nr + this.numar() + ":", font);
+        Paragraph paragraph3 = new Paragraph("Creati prin incercuire grupe de cate " + this.figuri(), font);
+        Paragraph paragraph4 = new Paragraph("Deseneaza ce inseamna pentru tine " + nr + this.numar());
+        Paragraph newline = new Paragraph("\n");
+
+        Image writingExerciseImage = Image.getInstance("src/main/resources/static/ScrierePDF " + nr + ".png");
+        writingExerciseImage.scaleAbsolute(450, 50);
+        Image circlingExerciseImage = Image.getInstance("src/main/resources/static/Incercuire cifra " + nr + ".png");
+        circlingExerciseImage.scaleAbsolute(450, 100);
+        Image groupExerciseImage = Image.getInstance("src/main/resources/static/" + figura + " " + culoare + ".png");
+        groupExerciseImage.scaleAbsolute(450, 100);
+
+        document.add(paragraph);
+        document.add(newline);
+        document.add(paragraph1);
+        document.add(newline);
+        document.add(writingExerciseImage);
+        document.add(writingExerciseImage);
+        document.add(newline);
+        document.add(paragraph2);
+        document.add(newline);
+        document.add(circlingExerciseImage);
+        document.add(newline);
+        document.add(paragraph3);
+        document.add(newline);
+        document.add(groupExerciseImage);
+        document.add(newline);
+        document.add(paragraph4);
+        document.close();
+    }
+
+    public String numar() {
         if (nr == 1) return "(unu)";
         if (nr == 2) return "(doi)";
         if (nr == 3) return "(trei)";
@@ -87,7 +81,8 @@ public class PDFGeneratorService {
         if (nr == 10) return "(zece)";
         return "invalid";
     }
-    public String figuri(){
+
+    public String figuri() {
         if (nr == 1) return "1(individuale):";
         if (nr == 2) return "2(doua):";
         if (nr == 3) return "3(trei):";
@@ -100,8 +95,9 @@ public class PDFGeneratorService {
         if (nr == 10) return "10(zece):";
         return "invalid";
     }
-    public String corectie(){
-        if(nr == 10) return "numarului ";
+
+    public String corectie() {
+        if (nr == 10) return "numarului ";
         else return "cifrei ";
     }
 }
